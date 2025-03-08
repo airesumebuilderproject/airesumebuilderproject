@@ -4,7 +4,7 @@ import useDebounce from "@/hooks/useDebounce";
 import { ResumeValues } from "@/lib/validation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { saveResume } from "./actions";
+import {saveResume } from "./actions"
 import { fileReplacer } from "@/lib/utils";
 
 export default function useAutoSaveResume(resumeData: ResumeValues) {
@@ -63,7 +63,7 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
           variant: "destructive",
           description: (
             <div className="space-y-3">
-              <p>Could Not Save Changes.</p>
+              <p>Could not save changes.</p>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -88,7 +88,8 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
     console.log("lastSavedData", JSON.stringify(lastSavedData, fileReplacer));
 
     const hasUnsavedChanges =
-      JSON.stringify(debouncedResumeData, fileReplacer) !==  JSON.stringify(lastSavedData, fileReplacer);
+      JSON.stringify(debouncedResumeData, fileReplacer) !==
+      JSON.stringify(lastSavedData, fileReplacer);
 
     if (hasUnsavedChanges && debouncedResumeData && !isSaving && !isError) {
       save();
@@ -108,4 +109,4 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
     hasUnsavedChanges:
       JSON.stringify(resumeData) !== JSON.stringify(lastSavedData),
   };
-}  
+}

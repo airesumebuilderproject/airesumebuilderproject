@@ -1,13 +1,7 @@
 import OpenAI from "openai";
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("❌ OpenAI API Key is missing! Please check your .env file.");
-}
-
-console.log("✅ Using OpenAI API Key:", process.env.OPENAI_API_KEY?.slice(0, 5) + "*****");
-
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // ✅ Ensure API key is loaded correctly
+  apiKey: process.env.OPENAI_API_KEY,  // Ensure API key is loaded properly
 });
 
 export default openai;

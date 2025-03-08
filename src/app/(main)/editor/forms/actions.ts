@@ -6,29 +6,25 @@ import {
   generateSummarySchema,
   GenerateWorkExperienceInput,
   generateWorkExperienceSchema,
-  // WorkExperience,
+  WorkExperience,
 } from "@/lib/validation";
 
+// ✅ Generate Summary Function
 export async function generateSummary(input: GenerateSummaryInput) {
+  console.log("🚀 Debug: generateSummary function started");
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error("❌ ERROR: API Key is missing. Check your environment variables.");
+    throw new Error("API Key is missing. Make sure OPENAI_API_KEY is set in your environment.");
+  }
+
+  const { jobTitle } = generateSummarySchema.parse(input);
+  const systemMessage = "You are a job resume generator AI. Your task is to write a professional introduction summary for a resume based on the provided data. Keep it concise and professional.";
+  const userMessage = `Job title: ${jobTitle || "N/A"}`;
+
+  console.log("✅ Sending request to OpenAI API...");
+  
   try {
-    const { jobTitle, workExperiences, educations, skills } = generateSummarySchema.parse(input);
-
-    const systemMessage = `
-      You are a job resume generator AI. Your task is to write a professional introduction summary for a resume.
-      Only return the summary and do not include any other information.
-    `;
-
-    const userMessage = `
-      Please generate a resume summary from this data:
-
-      Job title: ${jobTitle || "N/A"}
-      Work experience: ${workExperiences?.map(exp => `Position: ${exp.position} at ${exp.company}`).join("\n")}
-      Education: ${educations?.map(edu => `Degree: ${edu.degree} at ${edu.school}`).join("\n")}
-      Skills: ${skills}
-    `;
-
-    console.log("📌 Sending request to OpenAI...");
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -38,27 +34,35 @@ export async function generateSummary(input: GenerateSummaryInput) {
     });
 
     const aiResponse = completion.choices[0]?.message?.content;
+    console.log("✅ OpenAI Response:", aiResponse);
 
     if (!aiResponse) {
-      throw new Error("❌ OpenAI response is empty!");
+      throw new Error("Failed to generate AI response");
     }
 
     return aiResponse;
   } catch (error) {
-    console.error("⚠️ Error generating summary:", error);
+    console.error("❌ OpenAI API Error in generateSummary:", error);
     throw new Error("Failed to generate summary. Please try again.");
   }
 }
 
+// ✅ Generate Work Experience Function
 export async function generateWorkExperience(input: GenerateWorkExperienceInput) {
-  // try {
-    const { description } = generateWorkExperienceSchema.parse(input);
+  console.log("🚀 Debug: generateWorkExperience function started");
 
-    const systemMessage = `Generate work experience entry based on description.`;
-    const userMessage = `Description: ${description}`;
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("❌ API Key Missing! Check your .env.local file.");
+  }
 
-    console.log("📌 Sending request to OpenAI...");
+  const { description } = generateWorkExperienceSchema.parse(input);
+  
+  const systemMessage = "You are a job resume AI. Generate a single work experience entry.";
+  const userMessage = `Please generate a work experience entry for: ${description}`;
 
+  console.log("✅ Sending request to OpenAI API...");
+  
+  try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -67,25 +71,122 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
       ],
     });
 
-    console.log("✅ OpenAI Raw Response:", completion); // Debugging
+    console.log("✅ OpenAI Raw Response:", JSON.stringify(completion, null, 2)); // Log Full API Response
 
-    const aiResponse = completion.choices?.[0]?.message?.content;
-
-    if (!aiResponse) {
-      console.error("❌ OpenAI response is empty!");
-      throw new Error("❌ OpenAI response is empty!");
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error("❌ OpenAI response is empty. Debug the API call.");
     }
 
-    console.log("✅ AI Response Content:", aiResponse);
+    const aiResponse = completion.choices[0]?.message?.content;
+    console.log("✅ Parsed AI Response:", aiResponse);
+
+    if (!aiResponse) {
+      throw new Error("Failed to generate AI response");
+    }
 
     return {
       position: aiResponse.match(/Job title: (.*)/)?.[1] || "",
       company: aiResponse.match(/Company: (.*)/)?.[1] || "",
-      description: (aiResponse.match(/Description:([\s\S]*)/)?.[1] || "").trim(),
+      description: (aiResponse.match(/Description: ([\s\S]*)/)?.[1] || "").trim(),
       startDate: aiResponse.match(/Start date: (\d{4}-\d{2}-\d{2})/)?.[1],
       endDate: aiResponse.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1],
-    };
+    } satisfies WorkExperience;
+  } catch (error) {
+    console.error("❌ OpenAI API Error in generateWorkExperience:", error);
+    throw new Error("Failed to generate work experience. Please try again.");
   }
+}
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------
+// "use server";
+
+// import openai from "@/lib/openai";
+// import {
+//   GenerateSummaryInput,
+//   generateSummarySchema,
+//   GenerateWorkExperienceInput,
+//   generateWorkExperienceSchema,
+//   // WorkExperience,
+// } from "@/lib/validation";
+
+// export async function generateSummary(input: GenerateSummaryInput) {
+//   try {
+//     const { jobTitle, workExperiences, educations, skills } = generateSummarySchema.parse(input);
+
+//     const systemMessage = `
+//       You are a job resume generator AI. Your task is to write a professional introduction summary for a resume.
+//       Only return the summary and do not include any other information.
+//     `;
+
+//     const userMessage = `
+//       Please generate a resume summary from this data:
+
+//       Job title: ${jobTitle || "N/A"}
+//       Work experience: ${workExperiences?.map(exp => `Position: ${exp.position} at ${exp.company}`).join("\n")}
+//       Education: ${educations?.map(edu => `Degree: ${edu.degree} at ${edu.school}`).join("\n")}
+//       Skills: ${skills}
+//     `;
+
+//     console.log("📌 Sending request to OpenAI...");
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       messages: [
+//         { role: "system", content: systemMessage },
+//         { role: "user", content: userMessage },
+//       ],
+//     });
+
+//     const aiResponse = completion.choices[0]?.message?.content;
+
+//     if (!aiResponse) {
+//       throw new Error("❌ OpenAI response is empty!");
+//     }
+
+//     return aiResponse;
+//   } catch (error) {
+//     console.error("⚠️ Error generating summary:", error);
+//     throw new Error("Failed to generate summary. Please try again.");
+//   }
+// }
+
+// export async function generateWorkExperience(input: GenerateWorkExperienceInput) {
+//   // try {
+//     const { description } = generateWorkExperienceSchema.parse(input);
+
+//     const systemMessage = `Generate work experience entry based on description.`;
+//     const userMessage = `Description: ${description}`;
+
+//     console.log("📌 Sending request to OpenAI...");
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       messages: [
+//         { role: "system", content: systemMessage },
+//         { role: "user", content: userMessage },
+//       ],
+//     });
+
+//     console.log("✅ OpenAI Raw Response:", completion); // Debugging
+
+//     const aiResponse = completion.choices?.[0]?.message?.content;
+
+//     if (!aiResponse) {
+//       console.error("❌ OpenAI response is empty!");
+//       throw new Error("❌ OpenAI response is empty!");
+//     }
+
+//     console.log("✅ AI Response Content:", aiResponse);
+
+//     return {
+//       position: aiResponse.match(/Job title: (.*)/)?.[1] || "",
+//       company: aiResponse.match(/Company: (.*)/)?.[1] || "",
+//       description: (aiResponse.match(/Description:([\s\S]*)/)?.[1] || "").trim(),
+//       startDate: aiResponse.match(/Start date: (\d{4}-\d{2}-\d{2})/)?.[1],
+//       endDate: aiResponse.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1],
+//     };
+//   }
 //   } catch (error) {
 //     console.error("⚠️ Error generating work experience:", error);
 //     throw new Error(`Failed to generate work experience. Error: \n\n`);
@@ -134,7 +235,7 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
 //     throw new Error("Failed to generate work experience. Please try again.");
 //   }
 // }
-
+// --------------------------------------------------------------------------------------------------------------------------
 
 // "use server";
 

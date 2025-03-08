@@ -6,7 +6,7 @@ import {
   generateSummarySchema,
   GenerateWorkExperienceInput,
   generateWorkExperienceSchema,
-  WorkExperience,
+  // WorkExperience,
 } from "@/lib/validation";
 
 export async function generateSummary(input: GenerateSummaryInput) {
@@ -54,12 +54,8 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
   try {
     const { description } = generateWorkExperienceSchema.parse(input);
 
-    const systemMessage = `
-      You are an AI that generates work experience entries for resumes.
-      Provide details in the structured format given below.
-    `;
-
-    const userMessage = `Generate a work experience entry for: ${description}`;
+    const systemMessage = `Generate work experience entry based on description.`;
+    const userMessage = `Description: ${description}`;
 
     console.log("📌 Sending request to OpenAI...");
 
@@ -71,13 +67,16 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
       ],
     });
 
-    const aiResponse = completion.choices[0]?.message?.content;
+    console.log("✅ OpenAI Raw Response:", completion); // Debugging
+
+    const aiResponse = completion.choices?.[0]?.message?.content;
 
     if (!aiResponse) {
+      console.error("❌ OpenAI response is empty!");
       throw new Error("❌ OpenAI response is empty!");
     }
 
-    console.log("✅ AI Response:", aiResponse);
+    console.log("✅ AI Response Content:", aiResponse);
 
     return {
       position: aiResponse.match(/Job title: (.*)/)?.[1] || "",
@@ -85,12 +84,55 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
       description: (aiResponse.match(/Description:([\s\S]*)/)?.[1] || "").trim(),
       startDate: aiResponse.match(/Start date: (\d{4}-\d{2}-\d{2})/)?.[1],
       endDate: aiResponse.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1],
-    } satisfies WorkExperience;
+    };
   } catch (error) {
     console.error("⚠️ Error generating work experience:", error);
-    throw new Error("Failed to generate work experience. Please try again.");
+    throw new Error(`Failed to generate work experience. Error: \n\n`);
   }
 }
+
+
+// export async function generateWorkExperience(input: GenerateWorkExperienceInput) {
+//   try {
+//     const { description } = generateWorkExperienceSchema.parse(input);
+
+//     const systemMessage = `
+//       You are an AI that generates work experience entries for resumes.
+//       Provide details in the structured format given below.
+//     `;
+
+//     const userMessage = `Generate a work experience entry for: ${description}`;
+
+//     console.log("📌 Sending request to OpenAI...");
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       messages: [
+//         { role: "system", content: systemMessage },
+//         { role: "user", content: userMessage },
+//       ],
+//     });
+
+//     const aiResponse = completion.choices[0]?.message?.content;
+
+//     if (!aiResponse) {
+//       throw new Error("❌ OpenAI response is empty!");
+//     }
+
+//     console.log("✅ AI Response:", aiResponse);
+
+//     return {
+//       position: aiResponse.match(/Job title: (.*)/)?.[1] || "",
+//       company: aiResponse.match(/Company: (.*)/)?.[1] || "",
+//       description: (aiResponse.match(/Description:([\s\S]*)/)?.[1] || "").trim(),
+//       startDate: aiResponse.match(/Start date: (\d{4}-\d{2}-\d{2})/)?.[1],
+//       endDate: aiResponse.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1],
+//     } satisfies WorkExperience;
+//   } catch (error) {
+//     console.error("⚠️ Error generating work experience:", error);
+//     throw new Error("Failed to generate work experience. Please try again.");
+//   }
+// }
 
 
 // "use server";

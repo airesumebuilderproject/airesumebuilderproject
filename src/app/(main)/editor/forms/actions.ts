@@ -51,7 +51,7 @@ export async function generateSummary(input: GenerateSummaryInput) {
 }
 
 export async function generateWorkExperience(input: GenerateWorkExperienceInput) {
-  try {
+  // try {
     const { description } = generateWorkExperienceSchema.parse(input);
 
     const systemMessage = `Generate work experience entry based on description.`;
@@ -85,11 +85,12 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
       startDate: aiResponse.match(/Start date: (\d{4}-\d{2}-\d{2})/)?.[1],
       endDate: aiResponse.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1],
     };
-  } catch (error) {
-    console.error("⚠️ Error generating work experience:", error);
-    throw new Error(`Failed to generate work experience. Error: \n\n`);
   }
-}
+//   } catch (error) {
+//     console.error("⚠️ Error generating work experience:", error);
+//     throw new Error(`Failed to generate work experience. Error: \n\n`);
+//   }
+// }
 
 
 // export async function generateWorkExperience(input: GenerateWorkExperienceInput) {

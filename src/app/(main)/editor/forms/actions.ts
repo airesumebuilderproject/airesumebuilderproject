@@ -55,12 +55,14 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
     throw new Error("❌ API Key Missing! Check your .env.local file.");
   }
 
+  console.log("✅ API Key Loaded:", process.env.OPENAI_API_KEY ? "Yes" : "No");
+
   const { description } = generateWorkExperienceSchema.parse(input);
   
   const systemMessage = "You are a job resume AI. Generate a single work experience entry.";
   const userMessage = `Please generate a work experience entry for: ${description}`;
 
-  console.log("✅ Sending request to OpenAI API...");
+  console.log("✅ Sending request to OpenAI API with:", userMessage);
   
   try {
     const completion = await openai.chat.completions.create({
@@ -71,10 +73,10 @@ export async function generateWorkExperience(input: GenerateWorkExperienceInput)
       ],
     });
 
-    console.log("✅ OpenAI Raw Response:", JSON.stringify(completion, null, 2)); // Log Full API Response
+    console.log("✅ OpenAI Raw Response:", JSON.stringify(completion, null, 2)); // Full response log
 
     if (!completion.choices || completion.choices.length === 0) {
-      throw new Error("❌ OpenAI response is empty. Debug the API call.");
+      throw new Error("❌ OpenAI response is empty.");
     }
 
     const aiResponse = completion.choices[0]?.message?.content;

@@ -51,7 +51,7 @@ async function callDeepSeekAPI(prompt: string) {
 // ✅ NEW ChatGPT DeepSeek Function For Generate Work Experience Function
 
 export async function generateSummary(input: GenerateSummaryInput) {
-  // TODO: Block for non-premium users
+  // TODO: Block for non-premium users 
 
   console.log("🚀 Debug: generateSummary function started"); // Debug log added
 

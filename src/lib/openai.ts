@@ -7,7 +7,7 @@ const openai = new OpenAI({
 export default openai;
 
 
-
+// import az 
 
 // import OpenAI from "openai";
 

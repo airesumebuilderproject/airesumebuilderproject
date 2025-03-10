@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function useDebounce<T>(value: T, delay: number = 1000) {
-  // 🔹 Delay ko 1000ms (1 sec) kar diya taaki API calls ka gap aur zyada ho
+export default function useDebounce<T>(value: T, delay: number = 2000) {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
@@ -9,14 +8,14 @@ export default function useDebounce<T>(value: T, delay: number = 1000) {
       setDebouncedValue(value);
     }, delay);
 
-    return () => {
-      clearTimeout(handler); // 🔹 Previous timeout clear taaki duplicate calls na ho
-    };
+    return () => clearTimeout(handler); // ✅ Pehle ka timeout clear hoga
   }, [value, delay]);
 
   return debouncedValue;
 }
 
+
+// ----------------------------------- OG CODE  :
 // import { useEffect, useState } from "react";
 
 // export default function useDebounce<T>(value: T, delay: number = 250) {

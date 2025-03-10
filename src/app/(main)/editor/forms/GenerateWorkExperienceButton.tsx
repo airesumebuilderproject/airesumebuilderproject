@@ -122,9 +122,19 @@ function InputDialog({
                 </FormItem>
               )}
             />
-            <LoadingButton type="submit" loading={form.formState.isSubmitting}>
+            {/* --------------------------------- NEW CODE : */}
+            <LoadingButton
+              type="submit"
+              loading={form.formState.isSubmitting}
+              onClick={async () => {}} // ✅ Empty function to fix error
+            >
               Generate
             </LoadingButton>
+
+            {/* --------------------------------- OG CODE : */}
+            {/* <LoadingButton type="submit" loading={form.formState.isSubmitting}>
+              Generate
+            </LoadingButton> */}
           </form>
         </Form>
       </DialogContent>

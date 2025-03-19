@@ -1,4 +1,6 @@
-"use client"; // 👈 Isko Add Karo
+// --------------------------- TEST CODE - 3 :
+
+"use client"; // 👈 Ensure this is here for client-side components
 
 import { Toaster } from "@/components/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -7,6 +9,7 @@ import { Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import "./globals.css";
 
+// Load the Inter font
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
@@ -16,30 +19,87 @@ export default function RootLayout({
 }>) {
   const [mounted, setMounted] = useState(false);
 
+  // ✅ Prevent hydration mismatch by ensuring component is mounted before rendering
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null; // Prevent hydration mismatch
+  if (!mounted) return null; // ✅ Avoids Next.js hydration issues
 
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning={true}>
-        <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning={true}>
+      <head>
+        <title>AI Resume Builder</title> {/* ✅ Add title for SEO */}
+      </head>
+      <body className={inter.className}>
+        {/* ✅ Wrap everything inside ClerkProvider, but inside <body> */}
+        <ClerkProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster />
+            {children} {/* ✅ Render main content */}
+            <Toaster /> {/* ✅ Toast notifications */}
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
+
+
+
+
+
+// --------------------------- TEST CODE - 2 :
+
+// "use client"; // 👈 Isko Add Karo
+
+// import { Toaster } from "@/components/ui/toaster";
+// import { ClerkProvider } from "@clerk/nextjs";
+// import { ThemeProvider } from "next-themes";
+// import { Inter } from "next/font/google";
+// import { useEffect, useState } from "react";
+// import "./globals.css";
+
+// const inter = Inter({ subsets: ["latin"] });
+
+// export default function RootLayout({
+//   children,
+// }: Readonly<{
+//   children: React.ReactNode;
+// }>) {
+//   const [mounted, setMounted] = useState(false);
+
+//   useEffect(() => {
+//     setMounted(true);
+//   }, []);
+
+//   if (!mounted) return null; // Prevent hydration mismatch
+
+//   return (
+//     <ClerkProvider>
+//       <html lang="en" suppressHydrationWarning={true}>
+//         <body className={inter.className}>
+//           <ThemeProvider
+//             attribute="class"
+//             defaultTheme="system"
+//             enableSystem
+//             disableTransitionOnChange
+//           >
+//             {children}
+//             <Toaster />
+//           </ThemeProvider>
+//         </body>
+//       </html>
+//     </ClerkProvider>
+//   );
+// }
+
+
+// --------------------------- TEST CODE - 1 :
 
 // import { Toaster } from "@/components/ui/toaster";
 // import { ClerkProvider } from "@clerk/nextjs";

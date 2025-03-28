@@ -49,7 +49,7 @@
 import { AzureOpenAI } from "openai";
 
 const openai = new AzureOpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,  // Ensure API key is loaded properly
+  apiKey: process.env.DEEPSEEK_API_KEY,  
 });
 
 export default openai;

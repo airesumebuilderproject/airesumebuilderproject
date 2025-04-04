@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma"; // ✅ Now uses global-safe client
 import { resumeDataInclude } from "@/lib/types";
 import { auth } from "@clerk/nextjs/server";
 import { PlusSquare } from "lucide-react";
@@ -14,48 +14,50 @@ export const metadata: Metadata = {
 export default async function Page() {
   const { userId } = await auth();
 
-  if (!userId) {
-    return null;
+  // ✅ If not authenticated, return early
+  if (!userId) return null;
+
+  try {
+    // ✅ Fetch resumes and total count in parallel
+    const [resumes, totalCount] = await Promise.all([
+      prisma.resume.findMany({
+        where: { userId },
+        orderBy: { updatedAt: "desc" },
+        include: resumeDataInclude,
+      }),
+      prisma.resume.count({ where: { userId } }),
+    ]);
+
+    // ✅ Return the UI
+    return (
+      <main className="mx-auto w-full max-w-7xl space-y-6 px-3 py-6">
+        <Button asChild className="mx-auto flex w-fit gap-2">
+          <Link href="/editor">
+            <PlusSquare className="size-5" />
+            New resume
+          </Link>
+        </Button>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Your resumes</h1>
+          <p>Total: {totalCount}</p>
+        </div>
+        <div className="flex w-full grid-cols-2 flex-col gap-3 sm:grid md:grid-cols-3 lg:grid-cols-4">
+          {resumes.map((resume) => (
+            <ResumeItem key={resume.id} resume={resume} />
+          ))}
+        </div>
+      </main>
+    );
+  } catch (error: unknown) {
+    console.error("🔥 Failed to fetch resumes:", error);
+  
+    return (
+      <main className="p-6 text-center text-red-600">
+        <h2 className="text-2xl font-bold">Failed to load your resumes</h2>
+        <p>Please try again later. Server is misbehaving.</p>
+      </main>
+    );
   }
-
-  const [resumes, totalCount] = await Promise.all([
-    prisma.resume.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      include: resumeDataInclude,
-    }),
-    prisma.resume.count({
-      where: {
-        userId,
-      },
-    }),
-  ]);
-
-  // TODO: Check quota for non-premium users
-
-  return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 px-3 py-6">
-      <Button asChild className="mx-auto flex w-fit gap-2">
-        <Link href="/editor">
-          <PlusSquare className="size-5" />
-          New resume
-        </Link>
-      </Button>
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold">Your resumes</h1>
-        <p>Total: {totalCount}</p>
-      </div>
-      <div className="flex w-full grid-cols-2 flex-col gap-3 sm:grid md:grid-cols-3 lg:grid-cols-4">
-        {resumes.map((resume) => (
-          <ResumeItem key={resume.id} resume={resume} />
-        ))}
-      </div>
-    </main>
-  );
 }
 // import { Button } from "@/components/ui/button";
 // import prisma from "@/lib/prisma";
